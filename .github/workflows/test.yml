@@ -6,7 +6,7 @@ on:
 
 jobs:
   smoke:
-    name: Smoke test by building
+    name: Smoke test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -16,7 +16,7 @@ jobs:
       - run: yarn install
       - run: yarn build
   smoke:
-    name: Smoke test by building
+    name: Run Jest tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
