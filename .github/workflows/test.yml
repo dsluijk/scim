@@ -15,7 +15,7 @@ jobs:
           node-version: 18
       - run: yarn install
       - run: yarn build
-  smoke:
+  test:
     name: Run Jest tests
     runs-on: ubuntu-latest
     steps:
