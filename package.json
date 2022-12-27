@@ -1,0 +1,41 @@
+{
+  "name": "scim",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "SCIM protocol for TypeScript",
+  "author": "Dany Sluijk",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "source": "./src/index.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "exports": "./dist/index.modern.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "microbundle",
+    "dev": "microbundle watch",
+    "test": "jest",
+    "lint": "eslint . --ext .ts,.js,.vue,.json --max-warnings 0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.2.4",
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.47.1",
+    "@typescript-eslint/parser": "^5.47.1",
+    "eslint": "^8.30.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jest": "^27.1.7",
+    "eslint-plugin-json": "^3.1.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "expect-type": "^0.15.0",
+    "jest": "^29.3.1",
+    "microbundle": "^0.15.1",
+    "prettier": "^2.8.1",
+    "ts-jest": "^29.0.3",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4"
+  }
+}
