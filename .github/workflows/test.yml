@@ -1,4 +1,4 @@
-name: Run tests on push & PR
+name: Tests
 
 on:
   - push
@@ -16,7 +16,7 @@ jobs:
       - run: yarn install
       - run: yarn build
   test:
-    name: Run Jest tests
+    name: Jest tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

@@ -1,4 +1,4 @@
-name: Run linting on push & PR
+name: Linting
 
 on:
   - push
