@@ -1,1 +1,1 @@
-export const _placeholder = {};
+export * from "./attribute";
