@@ -107,12 +107,6 @@ const Attribute: Describe<Attribute> = defaulted(
           return "Non-complex attributes cannot contain subattributes";
         }
 
-        for (const sub of v) {
-          if (sub.type === Type.complex) {
-            return "Complex attributes cannot have complex subattributes";
-          }
-        }
-
         return true;
       },
     ),

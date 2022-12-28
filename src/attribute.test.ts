@@ -94,18 +94,6 @@ describe("Attribute Parse", () => {
     expect(() => create({ ...valid, type: "reference" }, Attribute)).toThrow(
       StructError,
     );
-    expect(() =>
-      create({ ...valid, type: "reference", referenceTypes: [] }, Attribute),
-    ).toThrow(StructError);
-    expect(() =>
-      create({ ...valid, type: "reference", referenceTypes: [42] }, Attribute),
-    ).toThrow(StructError);
-    expect(() =>
-      create(
-        { ...valid, type: "string", referenceTypes: ["external"] },
-        Attribute,
-      ),
-    ).toThrow(StructError);
     expect(
       create(
         { ...valid, type: "reference", referenceTypes: ["external"] },
@@ -119,27 +107,6 @@ describe("Attribute Parse", () => {
     expect(() => create({ ...valid, type: "complex" }, Attribute)).toThrow(
       StructError,
     );
-    expect(() =>
-      create({ ...valid, type: "complex", subAttributes: [] }, Attribute),
-    ).toThrow(StructError);
-    expect(() =>
-      create({ ...valid, type: "complex", subAttributes: [42] }, Attribute),
-    ).toThrow(StructError);
-    expect(() =>
-      create(
-        {
-          ...valid,
-          type: "complex",
-          subAttributes: [
-            { ...valid, type: "complex", subAttributes: [valid] },
-          ],
-        },
-        Attribute,
-      ),
-    ).toThrow(StructError);
-    expect(() =>
-      create({ ...valid, type: "string", subAttributes: [valid] }, Attribute),
-    ).toThrow(StructError);
     expect(
       create({ ...valid, type: "complex", subAttributes: [valid] }, Attribute),
     ).toStrictEqual({
@@ -322,5 +289,48 @@ describe("Attribute Parse", () => {
     expect(() => create({ ...valid, uniqueness: "yes" }, Attribute)).toThrow(
       StructError,
     );
+  });
+
+  test("Reference Types", () => {
+    expect(() =>
+      create({ ...valid, type: "reference", referenceTypes: [] }, Attribute),
+    ).toThrow(StructError);
+    expect(() =>
+      create({ ...valid, type: "reference", referenceTypes: [42] }, Attribute),
+    ).toThrow(StructError);
+    expect(() =>
+      create(
+        { ...valid, type: "string", referenceTypes: ["external"] },
+        Attribute,
+      ),
+    ).toThrow(StructError);
+  });
+
+  test("Sub Attributes", () => {
+    expect(() =>
+      create({ ...valid, type: "complex", subAttributes: [] }, Attribute),
+    ).toThrow(StructError);
+    expect(() =>
+      create({ ...valid, type: "complex", subAttributes: [42] }, Attribute),
+    ).toThrow(StructError);
+    expect(
+      create(
+        {
+          ...valid,
+          type: "complex",
+          subAttributes: [
+            { ...valid, type: "complex", subAttributes: [valid] },
+          ],
+        },
+        Attribute,
+      ),
+    ).toStrictEqual({
+      ...valid,
+      type: "complex",
+      subAttributes: [{ ...valid, type: "complex", subAttributes: [valid] }],
+    });
+    expect(() =>
+      create({ ...valid, type: "string", subAttributes: [valid] }, Attribute),
+    ).toThrow(StructError);
   });
 });
