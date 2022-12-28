@@ -10,7 +10,7 @@ import {
   string,
 } from "superstruct";
 
-export enum Type {
+export enum AttributeType {
   string = "string",
   boolean = "boolean",
   decimal = "decimal",
