@@ -10,9 +10,9 @@ import {
 
 const valid = {
   name: "displayName",
+  description: "The name of the User, suitable for display to end-users.",
   type: "string",
   multiValued: false,
-  description: "The name of the User, suitable for display to end-users.",
   required: false,
   canonicalValues: [],
   caseExact: false,
@@ -118,6 +118,69 @@ describe("Attribute Parse", () => {
       multiValued: false,
     });
     expect(() => create({ ...valid, multiValued: "yes" }, Attribute)).toThrow(
+      StructError,
+    );
+  });
+
+  test("Required", () => {
+    expect(create({ ...valid, required: undefined }, Attribute)).toStrictEqual({
+      ...valid,
+      required: false,
+    });
+    expect(create({ ...valid, required: true }, Attribute)).toStrictEqual({
+      ...valid,
+      required: true,
+    });
+    expect(create({ ...valid, required: false }, Attribute)).toStrictEqual({
+      ...valid,
+      required: false,
+    });
+    expect(() => create({ ...valid, required: "true" }, Attribute)).toThrow(
+      StructError,
+    );
+  });
+
+  test("Cannonical Values", () => {
+    expect(
+      create({ ...valid, canonicalValues: undefined }, Attribute),
+    ).toStrictEqual({
+      ...valid,
+      canonicalValues: [],
+    });
+    expect(create({ ...valid, canonicalValues: [] }, Attribute)).toStrictEqual({
+      ...valid,
+      canonicalValues: [],
+    });
+    expect(
+      create({ ...valid, canonicalValues: ["work", "home"] }, Attribute),
+    ).toStrictEqual({
+      ...valid,
+      canonicalValues: ["work", "home"],
+    });
+    expect(() =>
+      create({ ...valid, canonicalValues: "true" }, Attribute),
+    ).toThrow(StructError);
+    expect(() =>
+      create({ ...valid, canonicalValues: [42] }, Attribute),
+    ).toThrow(StructError);
+  });
+
+  test("Case Exact", () => {
+    expect(create({ ...valid, caseExact: undefined }, Attribute)).toStrictEqual(
+      {
+        ...valid,
+        caseExact: false,
+      },
+    );
+    expect(create({ ...valid, caseExact: true }, Attribute)).toStrictEqual({
+      ...valid,
+      caseExact: true,
+    });
+    expect(create({ ...valid, caseExact: false }, Attribute)).toStrictEqual({
+      ...valid,
+      caseExact: false,
+    });
+    expect(() => create({ ...valid, caseExact: "true" }, Attribute)).toThrow(
       StructError,
     );
   });
