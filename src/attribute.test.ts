@@ -91,13 +91,61 @@ describe("Attribute Parse", () => {
       ...valid,
       type: AttributeType.dateTime,
     });
-    expect(create({ ...valid, type: "reference" }, Attribute)).toStrictEqual({
+    expect(() => create({ ...valid, type: "reference" }, Attribute)).toThrow(
+      StructError,
+    );
+    expect(() =>
+      create({ ...valid, type: "reference", referenceTypes: [] }, Attribute),
+    ).toThrow(StructError);
+    expect(() =>
+      create({ ...valid, type: "reference", referenceTypes: [42] }, Attribute),
+    ).toThrow(StructError);
+    expect(() =>
+      create(
+        { ...valid, type: "string", referenceTypes: ["external"] },
+        Attribute,
+      ),
+    ).toThrow(StructError);
+    expect(
+      create(
+        { ...valid, type: "reference", referenceTypes: ["external"] },
+        Attribute,
+      ),
+    ).toStrictEqual({
       ...valid,
       type: AttributeType.reference,
+      referenceTypes: ["external"],
     });
-    expect(create({ ...valid, type: "complex" }, Attribute)).toStrictEqual({
+    expect(() => create({ ...valid, type: "complex" }, Attribute)).toThrow(
+      StructError,
+    );
+    expect(() =>
+      create({ ...valid, type: "complex", subAttributes: [] }, Attribute),
+    ).toThrow(StructError);
+    expect(() =>
+      create({ ...valid, type: "complex", subAttributes: [42] }, Attribute),
+    ).toThrow(StructError);
+    expect(() =>
+      create(
+        {
+          ...valid,
+          type: "complex",
+          subAttributes: [
+            { ...valid, type: "complex", subAttributes: [valid] },
+          ],
+        },
+        Attribute,
+      ),
+    ).toThrow(StructError);
+    expect(() =>
+      create({ ...valid, type: "string", subAttributes: [valid] }, Attribute),
+    ).toThrow(StructError);
+    expect(
+      create({ ...valid, type: "complex", subAttributes: [valid] }, Attribute),
+    ).toStrictEqual({
       ...valid,
       type: AttributeType.complex,
+      subAttributes: [valid],
     });
     expect(() => create({ ...valid, type: "class" }, Attribute)).toThrow(
       StructError,
