@@ -14,6 +14,7 @@ const valid = {
   multiValued: false,
   description: "The name of the User, suitable for display to end-users.",
   required: false,
+  canonicalValues: [],
   caseExact: false,
   mutability: "readWrite",
   returned: "default",
