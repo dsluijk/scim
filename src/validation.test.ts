@@ -75,7 +75,7 @@ describe("Path validation", () => {
 
 describe("Date String validation", () => {
   const input: unknown =
-    "Thu Dec 29 2022 12:29:16 GMT+0100 (Central European Standard Time)";
+    "Thu Jan 01 2000 12:00:00 GMT+0100 (Central European Standard Time)";
 
   test("Reject non-strings", () => {
     expect(() => create(42, dateString())).toThrow(StructError);
