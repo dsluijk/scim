@@ -350,7 +350,19 @@ describe("Attribute Types", () => {
       .toEqualTypeOf<AttributeType.binary>();
   });
 
-  test("Reference Types", () => {
+  test("Canonical Values", () => {
+    expectTypeOf<Attribute<AttributeType.string>>()
+      .toHaveProperty("canonicalValues")
+      .toEqualTypeOf<Array<never>>();
+    expectTypeOf<Attribute<AttributeType.string, "work">>()
+      .toHaveProperty("canonicalValues")
+      .toEqualTypeOf<Array<"work">>();
+    expectTypeOf<Attribute<AttributeType.string, "work" | "home">>()
+      .toHaveProperty("canonicalValues")
+      .toEqualTypeOf<Array<"work" | "home">>();
+  });
+
+  test("Reference", () => {
     expectTypeOf<Attribute<AttributeType.string>>()
       .toHaveProperty("referenceTypes")
       .toBeNever();

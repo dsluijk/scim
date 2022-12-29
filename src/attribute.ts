@@ -43,13 +43,13 @@ enum Uniqueness {
   global = "global",
 }
 
-type Attribute<T extends Type = Type> = {
+type Attribute<T extends Type = Type, C extends string = never> = {
   name: string;
   description: string;
   type: T;
   multiValued: boolean;
   required: boolean;
-  canonicalValues: string[];
+  canonicalValues: C[];
   caseExact: boolean;
   mutability: Mutability;
   returned: Returned;
@@ -58,7 +58,7 @@ type Attribute<T extends Type = Type> = {
   subAttributes: T extends Type.complex ? Attribute[] : never;
 };
 
-const Attribute: Describe<Attribute> = defaulted(
+const Attribute: Describe<Attribute<Type, string>> = defaulted(
   object({
     name: pattern(string(), /^([A-Za-z][A-Za-z\d$\-_]*)|(\$ref)$/),
     description: nonempty(string()),
