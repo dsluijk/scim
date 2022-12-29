@@ -2,7 +2,12 @@ import { create, StructError } from "superstruct";
 
 import { Schema } from "./schema";
 
+import enterpriseUserSchema from "./schemas/enterpriseUser.json";
 import groupSchema from "./schemas/group.json";
+import resourceTypeSchema from "./schemas/resourceType.json";
+import schemaSchema from "./schemas/schema.json";
+import serviceProviderConfigSchema from "./schemas/serviceProviderConfig.json";
+import userSchema from "./schemas/user.json";
 
 describe("Schema Parsing", () => {
   test("Valid JSON Input", () => {
@@ -12,8 +17,19 @@ describe("Schema Parsing", () => {
     expect(groupSchema.name).toStrictEqual("Group");
   });
 
-  test("Parses group", () => {
+  test("Parses all core schemas", () => {
+    expect(create(enterpriseUserSchema, Schema)).toMatchObject(
+      enterpriseUserSchema,
+    );
     expect(create(groupSchema, Schema)).toMatchObject(groupSchema);
+    expect(create(resourceTypeSchema, Schema)).toMatchObject(
+      resourceTypeSchema,
+    );
+    expect(create(schemaSchema, Schema)).toMatchObject(schemaSchema);
+    expect(create(serviceProviderConfigSchema, Schema)).toMatchObject(
+      serviceProviderConfigSchema,
+    );
+    expect(create(userSchema, Schema)).toMatchObject(userSchema);
   });
 
   test("ID", () => {
