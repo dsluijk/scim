@@ -6,7 +6,7 @@ import {
   AttributeReturned,
   AttributeType,
   AttributeUniqueness,
-} from "./attribute";
+} from "../attribute";
 
 const valid = {
   name: "displayName",

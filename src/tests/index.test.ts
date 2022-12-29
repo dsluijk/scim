@@ -1,6 +1,6 @@
-import * as FileAttribute from "./attribute";
+import * as FileAttribute from "../attribute";
 
-import * as IndexAttribute from ".";
+import * as IndexAttribute from "..";
 
 describe("Exports", () => {
   test("Attribute", () => {
