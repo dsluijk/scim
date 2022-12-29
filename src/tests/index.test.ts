@@ -1,9 +1,14 @@
 import * as FileAttribute from "../attribute";
+import * as FileSchema from "../schema";
 
-import * as IndexAttribute from "..";
+import * as Index from "..";
 
 describe("Exports", () => {
   test("Attribute", () => {
-    expect(IndexAttribute).toStrictEqual(FileAttribute);
+    expect(Index).toMatchObject(FileAttribute);
+  });
+
+  test("Schema", () => {
+    expect(Index).toMatchObject(FileSchema);
   });
 });
