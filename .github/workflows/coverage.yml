@@ -1,4 +1,4 @@
-name: "coverage"
+name: "Coverage"
 
 on:
   pull_request:
@@ -9,8 +9,12 @@ on:
 jobs:
   coverage:
     runs-on: ubuntu-latest
+    name: Coverage report
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
       - uses: ArtiomTr/jest-coverage-report-action@v2
         id: coverage
         with:
