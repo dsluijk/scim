@@ -91,6 +91,10 @@ describe("Attribute Parse", () => {
       ...valid,
       type: AttributeType.dateTime,
     });
+    expect(create({ ...valid, type: "binary" }, Attribute)).toStrictEqual({
+      ...valid,
+      type: AttributeType.binary,
+    });
     expect(() => create({ ...valid, type: "reference" }, Attribute)).toThrow(
       StructError,
     );

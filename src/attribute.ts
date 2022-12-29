@@ -19,6 +19,7 @@ enum Type {
   decimal = "decimal",
   integer = "integer",
   dateTime = "dateTime",
+  binary = "binary",
   reference = "reference",
   complex = "complex",
 }
