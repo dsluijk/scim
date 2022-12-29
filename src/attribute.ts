@@ -3,13 +3,12 @@ import {
   boolean,
   defaulted,
   Describe,
+  dynamic,
   enums,
-  lazy,
+  literal,
   nonempty,
   object,
-  optional,
   pattern,
-  refine,
   string,
 } from "superstruct";
 
@@ -44,19 +43,19 @@ enum Uniqueness {
   global = "global",
 }
 
-type Attribute = {
+type Attribute<T extends Type = Type> = {
   name: string;
-  type: Type;
-  multiValued: boolean;
   description: string;
+  type: T;
+  multiValued: boolean;
   required: boolean;
   canonicalValues: string[];
   caseExact: boolean;
   mutability: Mutability;
   returned: Returned;
   uniqueness: Uniqueness;
-  referenceTypes?: (string | "external" | "uri")[];
-  subAttributes?: Attribute[];
+  referenceTypes: T extends Type.reference ? string[] : never;
+  subAttributes: T extends Type.complex ? Attribute[] : never;
 };
 
 const Attribute: Describe<Attribute> = defaulted(
@@ -71,46 +70,24 @@ const Attribute: Describe<Attribute> = defaulted(
     mutability: enums(Object.values(Mutability)),
     returned: enums(Object.values(Returned)),
     uniqueness: enums(Object.values(Uniqueness)),
-    referenceTypes: refine(
-      optional(nonempty(array(nonempty(string())))),
-      "onType",
-      (v, ctx) => {
-        const type: string = ctx.branch.at(-2)?.type ?? "";
-        if (v === undefined) {
-          if (type === Type.reference) {
-            return "Reference attributes require reference types";
-          }
-
-          return true;
-        }
-
-        if (type !== Type.reference) {
-          return "Non-reference attributes cannot contain reference types.";
-        }
-
-        return true;
-      },
-    ),
-    subAttributes: refine(
-      lazy(() => optional(nonempty(array(Attribute)))),
-      "onType",
-      (v, ctx) => {
-        const type: string = ctx.branch.at(-2)?.type ?? "";
-        if (v === undefined) {
-          if (type === Type.complex) {
-            return "Complex attributes require subattributes";
-          }
-
-          return true;
-        }
-
-        if (type !== Type.complex) {
-          return "Non-complex attributes cannot contain subattributes";
-        }
-
-        return true;
-      },
-    ),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    referenceTypes: dynamic((_, ctx): any => {
+      const type: Type = ctx.branch.at(-2)?.type ?? Type.string;
+      if (type === Type.reference) {
+        return nonempty(array(nonempty(string())));
+      } else {
+        return literal(undefined);
+      }
+    }) as unknown as Describe<Attribute["referenceTypes"]>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    subAttributes: dynamic((_, ctx): any => {
+      const type: Type = ctx.branch.at(-2)?.type ?? Type.string;
+      if (type === Type.complex) {
+        return nonempty(array(Attribute));
+      } else {
+        return literal(undefined);
+      }
+    }) as unknown as Describe<Attribute["subAttributes"]>,
   }),
   {
     type: Type.string,

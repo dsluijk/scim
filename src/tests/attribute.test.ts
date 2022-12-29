@@ -1,4 +1,5 @@
 import { create, StructError } from "superstruct";
+import { expectTypeOf } from "expect-type";
 
 import {
   Attribute,
@@ -336,5 +337,40 @@ describe("Attribute Parse", () => {
     expect(() =>
       create({ ...valid, type: "string", subAttributes: [valid] }, Attribute),
     ).toThrow(StructError);
+  });
+});
+
+describe("Attribute Types", () => {
+  test("Type", () => {
+    expectTypeOf<Attribute<AttributeType.string>>()
+      .toHaveProperty("type")
+      .toEqualTypeOf<AttributeType.string>();
+    expectTypeOf<Attribute<AttributeType.binary>>()
+      .toHaveProperty("type")
+      .toEqualTypeOf<AttributeType.binary>();
+  });
+
+  test("Reference Types", () => {
+    expectTypeOf<Attribute<AttributeType.string>>()
+      .toHaveProperty("referenceTypes")
+      .toBeNever();
+    expectTypeOf<Attribute<AttributeType.reference>>()
+      .toHaveProperty("referenceTypes")
+      .toEqualTypeOf<Array<string>>();
+    expectTypeOf<Attribute<AttributeType.complex>>()
+      .toHaveProperty("referenceTypes")
+      .toBeNever();
+  });
+
+  test("Sub Attributes", () => {
+    expectTypeOf<Attribute<AttributeType.string>>()
+      .toHaveProperty("subAttributes")
+      .toBeNever();
+    expectTypeOf<Attribute<AttributeType.reference>>()
+      .toHaveProperty("subAttributes")
+      .toBeNever();
+    expectTypeOf<Attribute<AttributeType.complex>>()
+      .toHaveProperty("subAttributes")
+      .toEqualTypeOf<Array<Attribute>>();
   });
 });
