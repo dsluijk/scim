@@ -1,4 +1,4 @@
-import { refine, string } from "superstruct";
+import { coerce, date, pattern, refine, string } from "superstruct";
 import { IsURLOptions } from "validator/es/lib/isURL";
 
 import validator from "validator";
@@ -17,6 +17,22 @@ export const url = (opt?: IsURLOptions) =>
 
     return true;
   });
+
+/**
+ * Validator for URL paths.
+ * Does not allow for query & hex encoded paths.
+ * @returns A superstruct struct to validate the paths.
+ */
+export const path = () =>
+  pattern(string(), /^(\/|(\/([\w\-~:@!$&'()*+,;=]|(\.(?!\.)))+)+)$/);
+
+/**
+ * Parses a string as a date.
+ * You should use `create` with this, as only then you'll get the parsed date.
+ * @returns A superstruct struct to validate the string with.
+ */
+export const dateString = () =>
+  coerce(date(), string(), (date) => new Date(date));
 
 /**
  * Validator for the SCIM schema URN.
