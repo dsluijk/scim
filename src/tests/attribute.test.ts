@@ -15,7 +15,6 @@ const valid = {
   type: "string",
   multiValued: false,
   required: false,
-  canonicalValues: [],
   caseExact: false,
   mutability: "readWrite",
   returned: "default",
@@ -160,12 +159,9 @@ describe("Attribute Parse", () => {
     );
   });
 
-  test("Cannonical Values", () => {
-    expect(
-      create({ ...valid, canonicalValues: undefined }, Attribute),
-    ).toStrictEqual({
+  test("Canonical Values", () => {
+    expect(create({ ...valid }, Attribute)).toStrictEqual({
       ...valid,
-      canonicalValues: [],
     });
     expect(create({ ...valid, canonicalValues: [] }, Attribute)).toStrictEqual({
       ...valid,
@@ -341,7 +337,20 @@ describe("Attribute Parse", () => {
 });
 
 describe("Attribute Types", () => {
+  test("Name", () => {
+    expectTypeOf<Attribute>().toHaveProperty("name").toEqualTypeOf<string>();
+    expectTypeOf<Attribute<AttributeType.string, "">>()
+      .toHaveProperty("name")
+      .toEqualTypeOf<"">();
+    expectTypeOf<Attribute<AttributeType.string, "User">>()
+      .toHaveProperty("name")
+      .toEqualTypeOf<"User">();
+  });
+
   test("Type", () => {
+    expectTypeOf<Attribute>()
+      .toHaveProperty("type")
+      .toEqualTypeOf<AttributeType>();
     expectTypeOf<Attribute<AttributeType.string>>()
       .toHaveProperty("type")
       .toEqualTypeOf<AttributeType.string>();
@@ -350,19 +359,32 @@ describe("Attribute Types", () => {
       .toEqualTypeOf<AttributeType.binary>();
   });
 
+  test("Multi valued", () => {
+    expectTypeOf<Attribute>()
+      .toHaveProperty("multiValued")
+      .toEqualTypeOf<boolean>();
+    expectTypeOf<Attribute<AttributeType.string, "", true>>()
+      .toHaveProperty("multiValued")
+      .toEqualTypeOf<true>();
+    expectTypeOf<Attribute<AttributeType.string, "", false>>()
+      .toHaveProperty("multiValued")
+      .toEqualTypeOf<false>();
+  });
+
   test("Canonical Values", () => {
-    expectTypeOf<Attribute<AttributeType.string>>()
+    expectTypeOf<Attribute>()
       .toHaveProperty("canonicalValues")
-      .toEqualTypeOf<Array<never>>();
-    expectTypeOf<Attribute<AttributeType.string, "work">>()
+      .toEqualTypeOf<Array<string>>();
+    expectTypeOf<Attribute<AttributeType.string, "", false, "work">>()
       .toHaveProperty("canonicalValues")
       .toEqualTypeOf<Array<"work">>();
-    expectTypeOf<Attribute<AttributeType.string, "work" | "home">>()
+    expectTypeOf<Attribute<AttributeType.string, "", false, "work" | "home">>()
       .toHaveProperty("canonicalValues")
       .toEqualTypeOf<Array<"work" | "home">>();
   });
 
   test("Reference", () => {
+    expectTypeOf<Attribute>().toHaveProperty("referenceTypes").toBeNever();
     expectTypeOf<Attribute<AttributeType.string>>()
       .toHaveProperty("referenceTypes")
       .toBeNever();
@@ -375,6 +397,7 @@ describe("Attribute Types", () => {
   });
 
   test("Sub Attributes", () => {
+    expectTypeOf<Attribute>().toHaveProperty("subAttributes").toBeNever();
     expectTypeOf<Attribute<AttributeType.string>>()
       .toHaveProperty("subAttributes")
       .toBeNever();
@@ -383,6 +406,6 @@ describe("Attribute Types", () => {
       .toBeNever();
     expectTypeOf<Attribute<AttributeType.complex>>()
       .toHaveProperty("subAttributes")
-      .toEqualTypeOf<Array<Attribute>>();
+      .toBeArray();
   });
 });

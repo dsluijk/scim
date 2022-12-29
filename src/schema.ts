@@ -11,7 +11,7 @@ import {
 import { dateString, path, url } from "./validation";
 import { Attribute } from "./attribute";
 
-export type Schema = {
+export type Schema<A extends Array<Attribute> = Attribute[]> = {
   id: string;
   name?: string;
   description?: string;
@@ -22,7 +22,7 @@ export type Schema = {
     location?: string;
     version?: string;
   };
-  attributes: Attribute[];
+  attributes: A;
 };
 export const Schema: Describe<Schema> = object({
   id: nonempty(string()),
