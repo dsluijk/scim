@@ -1,13 +1,13 @@
 import { create, StructError } from "superstruct";
 
-import { Schema } from "./schema";
+import { Schema } from "../schema";
 
-import enterpriseUserSchema from "./schemas/enterpriseUser.json";
-import groupSchema from "./schemas/group.json";
-import resourceTypeSchema from "./schemas/resourceType.json";
-import schemaSchema from "./schemas/schema.json";
-import serviceProviderConfigSchema from "./schemas/serviceProviderConfig.json";
-import userSchema from "./schemas/user.json";
+import enterpriseUserSchema from "../schemas/enterpriseUser.json";
+import groupSchema from "../schemas/group.json";
+import resourceTypeSchema from "../schemas/resourceType.json";
+import schemaSchema from "../schemas/schema.json";
+import serviceProviderConfigSchema from "../schemas/serviceProviderConfig.json";
+import userSchema from "../schemas/user.json";
 
 describe("Schema Parsing", () => {
   test("Valid JSON Input", () => {

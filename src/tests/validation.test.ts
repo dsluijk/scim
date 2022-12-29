@@ -1,7 +1,7 @@
 import { assert, create, StructError } from "superstruct";
 import { expectTypeOf } from "expect-type";
 
-import { dateString, path, schemaUrn, url } from "./validation";
+import { dateString, path, schemaUrn, url } from "../validation";
 
 describe("URL validation", () => {
   test("Reject non-strings", () => {
