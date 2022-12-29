@@ -1,4 +1,4 @@
-import { refine, string } from "superstruct";
+import { pattern, refine, string } from "superstruct";
 import { IsURLOptions } from "validator/es/lib/isURL";
 
 import validator from "validator";
@@ -17,6 +17,14 @@ export const url = (opt?: IsURLOptions) =>
 
     return true;
   });
+
+/**
+ * Validator for URL paths.
+ * Does not allow for query & hex encoded paths.
+ * @returns A superstruct struct to validate the paths.
+ */
+export const path = () =>
+  pattern(string(), /^(\/|(\/([\w\-~:@!$&'()*+,;=]|(\.(?!\.)))+)+)$/);
 
 /**
  * Validator for the SCIM schema URN.

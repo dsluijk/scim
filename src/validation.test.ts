@@ -1,7 +1,7 @@
 import { assert, StructError } from "superstruct";
 import { expectTypeOf } from "expect-type";
 
-import { schemaUrn, url } from "./validation";
+import { path, schemaUrn, url } from "./validation";
 
 describe("URL validation", () => {
   test("Reject non-strings", () => {
@@ -18,6 +18,50 @@ describe("URL validation", () => {
   test("Reject bare URLs.", () => {
     expect(() => assert("npmjs.com/package/scim", url())).toThrow(StructError);
     expect(() => assert("dany.dev", url())).toThrow(StructError);
+  });
+
+  test("Reject relative URLs.", () => {
+    expect(() => assert("/package/scim", url())).toThrow(StructError);
+    expect(() => assert("/", url())).toThrow(StructError);
+  });
+
+  test("Return type is string", () => {
+    const input: unknown = "https://dany.dev";
+
+    expectTypeOf(input).toBeUnknown();
+    assert(input, url());
+    expectTypeOf(input).toBeString();
+  });
+});
+
+describe("Path validation", () => {
+  test("Reject non-strings", () => {
+    expect(() => assert(42, path())).toThrow(StructError);
+    expect(() => assert({}, path())).toThrow(StructError);
+    expect(() => assert([], path())).toThrow(StructError);
+  });
+
+  test("Reject HTTP URLs.", () => {
+    expect(() => assert("https://npmjs.com/package/scim", path())).toThrow(
+      StructError,
+    );
+    expect(() => assert("https://dany.dev", path())).toThrow(StructError);
+  });
+
+  test("Reject bare URLs.", () => {
+    expect(() => assert("npmjs.com/package/scim", path())).toThrow(StructError);
+    expect(() => assert("dany.dev", path())).toThrow(StructError);
+  });
+
+  test("Accept relative path.", () => {
+    expect(assert("/package/scim", path())).toBeUndefined();
+    expect(assert("/", path())).toBeUndefined();
+  });
+
+  test("Reject directory traversal path.", () => {
+    expect(() => assert("/../package/scim", path())).toThrow(StructError);
+    expect(() => assert("/..", path())).toThrow(StructError);
+    expect(() => assert("../", path())).toThrow(StructError);
   });
 
   test("Return type is string", () => {
