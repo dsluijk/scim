@@ -1,7 +1,7 @@
-import { assert, StructError } from "superstruct";
+import { assert, create, StructError } from "superstruct";
 import { expectTypeOf } from "expect-type";
 
-import { path, schemaUrn, url } from "./validation";
+import { dateString, path, schemaUrn, url } from "./validation";
 
 describe("URL validation", () => {
   test("Reject non-strings", () => {
@@ -70,6 +70,34 @@ describe("Path validation", () => {
     expectTypeOf(input).toBeUnknown();
     assert(input, url());
     expectTypeOf(input).toBeString();
+  });
+});
+
+describe("Date String validation", () => {
+  const input: unknown =
+    "Thu Dec 29 2022 12:29:16 GMT+0100 (Central European Standard Time)";
+
+  test("Reject non-strings", () => {
+    expect(() => create(42, dateString())).toThrow(StructError);
+    expect(() => create({}, dateString())).toThrow(StructError);
+    expect(() => create([], dateString())).toThrow(StructError);
+  });
+
+  test("Reject invalid dates", () => {
+    expect(() => create("", dateString())).toThrow(StructError);
+    expect(() => create("IAMNOTADATE", dateString())).toThrow(StructError);
+  });
+
+  test("Accept a valid date.", () => {
+    expect(create(input, dateString())).toStrictEqual(
+      new Date(input as string),
+    );
+  });
+
+  test("Return type is Date", () => {
+    expectTypeOf(input).toBeUnknown();
+    const out = create(input, dateString());
+    expectTypeOf(out).toEqualTypeOf<Date>();
   });
 });
 
