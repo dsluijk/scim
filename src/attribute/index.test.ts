@@ -110,4 +110,21 @@ describe("Attribute", () => {
 
     expectTypeOf(attr.validate(42)).toEqualTypeOf<number | undefined>();
   });
+
+  test("Untyped Validator", () => {
+    expectTypeOf(
+      new Attribute({
+        name: "name",
+        description: "",
+        type: "string",
+        multiValued: false,
+        required: true,
+        caseExact: true,
+        canonicalValues: [],
+        mutability: "readWrite",
+        returned: "default",
+        uniqueness: "none",
+      } as object),
+    ).toEqualTypeOf<Attribute<AttributeSchema>>();
+  });
 });
