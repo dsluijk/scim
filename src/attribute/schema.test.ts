@@ -1,7 +1,8 @@
 import { expectTypeOf } from "expect-type";
+import { StructError } from "superstruct";
 
+import { AttributeSchema, createAttributeSchema } from "./schema";
 import { Mutability, Returned, Type, Uniqueness } from "./characteristics";
-import { AttributeSchema } from "./schema";
 
 describe("Attribute Schema", () => {
   type Unknown = AttributeSchema;
@@ -123,6 +124,68 @@ describe("Attribute Schema", () => {
     >();
     expectTypeOf<Blobs["referenceTypes"]>().toEqualTypeOf<
       unknown[] | undefined
+    >();
+  });
+});
+
+describe("Create Attribute Schema", () => {
+  const baseSchema = {
+    name: "name",
+    description: "",
+    type: "string",
+    multiValued: false,
+    required: false,
+    caseExact: false,
+    canonicalValues: [] as [],
+    mutability: "readWrite",
+    returned: "default",
+    uniqueness: "none",
+  } as const;
+
+  test("Idempotency", () => {
+    expect(createAttributeSchema(baseSchema)).toStrictEqual(baseSchema);
+  });
+
+  test("Defaults autofills", () => {
+    expect(
+      createAttributeSchema({
+        ...baseSchema,
+        type: undefined,
+        description: undefined,
+        required: undefined,
+        canonicalValues: undefined,
+        caseExact: undefined,
+        mutability: undefined,
+        returned: undefined,
+        uniqueness: undefined,
+      }),
+    ).toStrictEqual(baseSchema);
+  });
+
+  test("Invalid Schema Throws", () => {
+    expect(() => createAttributeSchema(undefined as unknown as object)).toThrow(
+      StructError,
+    );
+    expect(() => createAttributeSchema(42 as unknown as object)).toThrow(
+      StructError,
+    );
+    expect(() => createAttributeSchema({ ...baseSchema, answer: 42 })).toThrow(
+      StructError,
+    );
+  });
+
+  test("Missing Required Throws", () => {
+    expect(() =>
+      createAttributeSchema({ ...baseSchema, name: undefined }),
+    ).toThrow(StructError);
+    expect(() =>
+      createAttributeSchema({ ...baseSchema, multiValued: undefined }),
+    ).toThrow(StructError);
+  });
+
+  test("Correct Type", () => {
+    expectTypeOf(createAttributeSchema(baseSchema)).toEqualTypeOf<
+      AttributeSchema<"name", "string", false, false, []>
     >();
   });
 });

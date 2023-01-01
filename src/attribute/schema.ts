@@ -68,6 +68,12 @@ export const AttributeSchema: Describe<AttributeSchema> = object({
  */
 export const createAttributeSchema = <AS extends AttributeSchema>(
   as: Partial<AS>,
-): AS => {
+): AttributeSchema<
+  AS["name"],
+  AS["type"],
+  AS["multiValued"],
+  AS["required"],
+  AS["canonicalValues"]
+> => {
   return create(as, AttributeSchema) as AS;
 };
