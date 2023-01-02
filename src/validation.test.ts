@@ -1,9 +1,25 @@
-import { assert, create, StructError } from "superstruct";
+import {
+  assert,
+  create,
+  Describe,
+  enums,
+  literal,
+  string,
+  StructError,
+} from "superstruct";
 import { expectTypeOf } from "expect-type";
 
-import { dateString, path, schemaUrn, url } from "../validation";
+import {
+  base64,
+  dateString,
+  lowercase,
+  path,
+  schemaUrn,
+  uint8array,
+  url,
+} from "./validation";
 
-describe("URL validation", () => {
+describe("URL validation.", () => {
   test("Reject non-strings", () => {
     expect(() => assert(42, url())).toThrow(StructError);
     expect(() => assert({}, url())).toThrow(StructError);
@@ -34,7 +50,7 @@ describe("URL validation", () => {
   });
 });
 
-describe("Path validation", () => {
+describe("Path validation.", () => {
   test("Reject non-strings", () => {
     expect(() => assert(42, path())).toThrow(StructError);
     expect(() => assert({}, path())).toThrow(StructError);
@@ -73,7 +89,7 @@ describe("Path validation", () => {
   });
 });
 
-describe("Date String validation", () => {
+describe("Date String validation.", () => {
   const input: unknown =
     "Thu Jan 01 2000 12:00:00 GMT+0100 (Central European Standard Time)";
 
@@ -101,7 +117,127 @@ describe("Date String validation", () => {
   });
 });
 
-describe("Schema URN validation", () => {
+describe("Base64 validation.", () => {
+  test("Reject other types.", () => {
+    expect(() => create(42, base64())).toThrow(StructError);
+    expect(() => create({}, base64())).toThrow(StructError);
+    expect(() => create([], base64())).toThrow(StructError);
+  });
+
+  test("Accept a valid base64 string.", () => {
+    expect(create("", base64())).toStrictEqual(new Uint8Array(0));
+    expect(create("SGVsbG8gV29ybGQh", base64())).toStrictEqual(
+      new Uint8Array([72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33]),
+    );
+  });
+
+  test("Rejects a invalid base64 string.", () => {
+    expect(() => create("qwertyuiop", base64())).toThrow(StructError);
+    expect(() => create("SGVsbG8gV29ybGQ", base64())).toThrow(StructError);
+  });
+
+  test("Accept valid Uint8Array.", () => {
+    expect(create(new Uint8Array(0), base64())).toStrictEqual(
+      new Uint8Array(0),
+    );
+  });
+
+  test("Return type is Uint8Array.", () => {
+    const input: unknown = new Uint8Array(0);
+    expectTypeOf(input).toBeUnknown();
+    const out = create(input, base64());
+    expectTypeOf(out).toEqualTypeOf<Uint8Array>();
+  });
+});
+
+describe("Uint8Array validation.", () => {
+  test("Reject other types.", () => {
+    expect(() => create(42, uint8array())).toThrow(StructError);
+    expect(() => create({}, uint8array())).toThrow(StructError);
+    expect(() => create([], uint8array())).toThrow(StructError);
+  });
+
+  test("Accept a valid Uint8Array.", () => {
+    expect(create(new Uint8Array(0), uint8array())).toStrictEqual(
+      new Uint8Array(0),
+    );
+  });
+
+  test("Return type is Uint8Array.", () => {
+    const input: unknown = new Uint8Array(0);
+    expectTypeOf(input).toBeUnknown();
+    const out = create(input, uint8array());
+    expectTypeOf(out).toEqualTypeOf<Uint8Array>();
+  });
+});
+
+describe("Lowercase string validation.", () => {
+  test("Reject or ignore non-strings", () => {
+    expect(() => create(42, lowercase(string()))).toThrow(StructError);
+    expect(() => create({}, lowercase(string()))).toThrow(StructError);
+    expect(() => create([], lowercase(string()))).toThrow(StructError);
+    expect(
+      create(1, lowercase(literal(1) as unknown as Describe<string>)),
+    ).toStrictEqual(1);
+    expect(
+      create(1, lowercase(enums([1, 2]) as unknown as Describe<string>)),
+    ).toStrictEqual(1);
+  });
+
+  test("Accept lowercased strings", () => {
+    expect(create("", lowercase(string()))).toStrictEqual("");
+    expect(create("some data", lowercase(string()))).toStrictEqual("some data");
+    expect(create("other thing", lowercase(string()))).toStrictEqual(
+      "other thing",
+    );
+  });
+
+  test("Accept string enums", () => {
+    expect(create("home", lowercase(enums(["home", "work"])))).toStrictEqual(
+      "home",
+    );
+    expect(create("HOME", lowercase(enums(["home", "work"])))).toStrictEqual(
+      "home",
+    );
+    expect(() => create("school", lowercase(enums(["home", "work"])))).toThrow(
+      StructError,
+    );
+  });
+
+  test("Accept string literal", () => {
+    expect(create("home", lowercase(literal("home")))).toStrictEqual("home");
+    expect(create("HOME", lowercase(literal("home")))).toStrictEqual("home");
+    expect(() => create("home", lowercase(literal("HOME")))).toThrow(
+      StructError,
+    );
+    expect(() => create("HOME", lowercase(literal("HOME")))).toThrow(
+      StructError,
+    );
+    expect(() => create("work", lowercase(literal("home")))).toThrow(
+      StructError,
+    );
+  });
+
+  test("Transforms uppercased strings to lowercase", () => {
+    expect(create("", lowercase(string()))).toStrictEqual("");
+    expect(create("SOME DATA", lowercase(string()))).toStrictEqual("some data");
+    expect(create("OTHER THING", lowercase(string()))).toStrictEqual(
+      "other thing",
+    );
+    expect(create("MIXED thing!", lowercase(string()))).toStrictEqual(
+      "mixed thing!",
+    );
+  });
+
+  test("Return type is a string", () => {
+    const input: unknown = "str";
+    expectTypeOf().toBeUnknown();
+    const out = create(input, lowercase(string()));
+    expectTypeOf(out).toEqualTypeOf<string>();
+  });
+});
+
+describe("Schema URN validation.", () => {
   test("Reject non-strings", () => {
     expect(() => assert(42, schemaUrn())).toThrow(StructError);
     expect(() => assert({}, schemaUrn())).toThrow(StructError);

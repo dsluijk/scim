@@ -16,8 +16,9 @@
   "scripts": {
     "build": "microbundle",
     "dev": "microbundle watch",
-    "test": "jest --verbose",
+    "test": "jest",
     "test-dev": "jest --watch --notify",
+    "coverage": "jest --verbose --collectCoverage",
     "lint": "eslint . --ext .ts,.js,.vue,.json --max-warnings 0"
   },
   "devDependencies": {
@@ -42,6 +43,7 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
+    "rfc4648": "^1.5.2",
     "superstruct": "^1.0.3",
     "validator": "^13.7.0"
   }

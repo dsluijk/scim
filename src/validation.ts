@@ -1,5 +1,14 @@
-import { coerce, date, pattern, refine, string } from "superstruct";
+import {
+  coerce,
+  date,
+  instance,
+  pattern,
+  refine,
+  string,
+  Struct,
+} from "superstruct";
 import { IsURLOptions } from "validator/es/lib/isURL";
+import { base64 as libBase64 } from "rfc4648";
 
 import validator from "validator";
 
@@ -33,6 +42,44 @@ export const path = () =>
  */
 export const dateString = () =>
   coerce(date(), string(), (date) => new Date(date));
+
+/**
+ * Validates that a string is a valid base64 string.
+ * @returns A superstruct struct to validate the base64 with.
+ */
+const base64string = () =>
+  refine(string(), "base64 string", (v) => {
+    try {
+      libBase64.parse(v);
+      return true;
+    } catch {
+      return "Invalid base64 string.";
+    }
+  });
+
+/**
+ * Parses a base64 encoded string to binary.
+ * This transforms the encoded data to an Int Array.
+ * @returns A superstruct struct to coerce with.
+ */
+export const base64 = () =>
+  coerce(uint8array(), base64string(), (b) => libBase64.parse(b));
+
+/**
+ * Uint8Array validator for Superstruct.
+ * @returns A superstruct struct to validate the Int Array with.
+ */
+export const uint8array = () => instance(Uint8Array);
+
+/**
+ * Transforms a string to a lowercase version.
+ * This is only used on strings, using non-strings is a NOP.
+ * Note: literal and enums structs should have lowercased values.
+ * @param struct The superstruct validator which returns a string.
+ * @returns A superstruct struct to validate the lowercased string with.
+ */
+export const lowercase = <T extends string, S>(struct: Struct<T, S>) =>
+  coerce(struct, string(), (s) => s.toLowerCase());
 
 /**
  * Validator for the SCIM schema URN.
