@@ -4,9 +4,11 @@ import {
   defaulted,
   Describe,
   enums,
+  literal,
   nonempty,
   pattern,
   string,
+  union,
 } from "superstruct";
 
 import { lowercase } from "../validation";
@@ -14,15 +16,13 @@ import { lowercase } from "../validation";
 /**
  * Different options when there are a limited amount of choices for certain charateristics.
  */
-const TypeOptions = [
+const SimpleTypeOptions = [
   "string",
   "boolean",
   "decimal",
   "integer",
   "dateTime",
   "binary",
-  "reference",
-  "complex",
 ] as const;
 const MutabilityOptions = [
   "readOnly",
@@ -40,16 +40,48 @@ const UniquenessOptions = ["none", "server", "global"] as const;
  */
 export type Name = string;
 export const Name: Describe<Name> = nonempty(
-  lowercase(pattern(string(), /^([A-Za-z][A-Za-z\d$\-_]*)|(\$ref)$/)),
+  lowercase(pattern(string(), /^[A-Za-z][A-Za-z\d$\-_]*$/)),
 );
 
 /**
- * The data type, automatically adding basic validation.
+ * The simple atttribute types, automatically adding basic validation.
  *
  * Defaults to `string`.
  */
-export type Type = typeof TypeOptions[number];
-export const Type = defaulted(enums(TypeOptions), "string");
+export type SimpleType = (typeof SimpleTypeOptions)[number];
+export const SimpleType: Describe<SimpleType> = defaulted(
+  enums(SimpleTypeOptions),
+  "string",
+);
+
+/**
+ * The complex atttribute type.
+ *
+ * This has no default, as the default is in the simple types.
+ */
+export type ComplexType = "complex";
+export const ComplexType: Describe<ComplexType> = literal("complex");
+
+/**
+ * The reference atttribute type.
+ *
+ * This has no default, as the default is in the simple types.
+ */
+export type ReferenceType = "reference";
+export const ReferenceType: Describe<ReferenceType> = literal("reference");
+
+/**
+ * All possible types for the attribute type.
+ * Merges them all together.
+ *
+ * Defaults to `string`.
+ */
+export type Type = SimpleType | ComplexType | ReferenceType;
+export const Type: Describe<Type> = union([
+  SimpleType,
+  ComplexType,
+  ReferenceType,
+]) as unknown as Describe<Type>;
 
 /**
  * Whenether the attribute accepts multiple values.
@@ -105,7 +137,7 @@ export const CaseExact: Describe<CaseExact> = defaulted(boolean(), false);
  *
  * Defaults to `readWrite`.
  */
-export type Mutability = typeof MutabilityOptions[number];
+export type Mutability = (typeof MutabilityOptions)[number];
 export const Mutability: Describe<Mutability> = defaulted(
   enums(MutabilityOptions),
   "readWrite",
@@ -116,7 +148,7 @@ export const Mutability: Describe<Mutability> = defaulted(
  *
  * Defaults to `default`.
  */
-export type Returned = typeof ReturnedOptions[number];
+export type Returned = (typeof ReturnedOptions)[number];
 export const Returned: Describe<Returned> = defaulted(
   enums(ReturnedOptions),
   "default",
@@ -128,7 +160,7 @@ export const Returned: Describe<Returned> = defaulted(
  *
  * Defaults to `none`.
  */
-export type Uniqueness = typeof UniquenessOptions[number];
+export type Uniqueness = (typeof UniquenessOptions)[number];
 export const Uniqueness: Describe<Uniqueness> = defaulted(
   enums(UniquenessOptions),
   "none",

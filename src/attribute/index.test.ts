@@ -1,4 +1,5 @@
 import { expectTypeOf } from "expect-type";
+import { StructError } from "superstruct";
 
 import { AttributeSchema } from "./schema";
 import { Type } from "./characteristics";
@@ -19,6 +20,19 @@ const schema: AttributeSchema = {
 };
 
 describe("Attribute", () => {
+  const baseSchema = {
+    name: "name",
+    description: "",
+    type: "string",
+    multiValued: false,
+    required: false,
+    caseExact: false,
+    canonicalValues: [] as [],
+    mutability: "readWrite",
+    returned: "default",
+    uniqueness: "none",
+  } as const;
+
   test("Constructor", () => {
     // A valid schema should be creatable.
     expect(() => new Attribute(schema)).not.toThrow();
@@ -74,12 +88,12 @@ describe("Attribute", () => {
       uniqueness: "none",
     });
 
-    expect(attr.validate([])).toStrictEqual([]);
     expect(attr.validate(["work"])).toStrictEqual(["work"]);
     expect(attr.validate(["WORK"])).toStrictEqual(["work"]);
     expect(attr.validate(["home", "work"])).toStrictEqual(["home", "work"]);
     expect(attr.validate(["work", "work"])).toStrictEqual(["work", "work"]);
     expect(() => attr.validate(undefined)).toThrow();
+    expect(() => attr.validate([])).toThrow();
     expect(() => attr.validate("work")).toThrow();
     expect(() => attr.validate([42])).toThrow();
     expect(() => attr.validate(["work", "school"])).toThrow();
@@ -126,5 +140,84 @@ describe("Attribute", () => {
         uniqueness: "none",
       } as object),
     ).toEqualTypeOf<Attribute<AttributeSchema>>();
+  });
+
+  test("Idempotency", () => {
+    expect(() => new Attribute(baseSchema)).not.toThrow();
+  });
+
+  test("Defaults autofills", () => {
+    expect(
+      () =>
+        new Attribute({
+          ...baseSchema,
+          type: undefined,
+          description: undefined,
+          required: undefined,
+          canonicalValues: undefined,
+          caseExact: undefined,
+          mutability: undefined,
+          returned: undefined,
+          uniqueness: undefined,
+        }),
+    ).not.toThrow();
+  });
+
+  test("Invalid Schema Throws", () => {
+    expect(() => new Attribute(undefined as unknown as object)).toThrow(
+      StructError,
+    );
+    expect(() => new Attribute(42 as unknown as object)).toThrow(StructError);
+    expect(() => new Attribute({ ...baseSchema, answer: 42 })).toThrow(
+      StructError,
+    );
+  });
+
+  test("Missing Required Throws", () => {
+    expect(() => new Attribute({ ...baseSchema, name: undefined })).toThrow(
+      StructError,
+    );
+    expect(
+      () => new Attribute({ ...baseSchema, multiValued: undefined }),
+    ).toThrow(StructError);
+  });
+
+  test("Subattributes cannot contain subattributes.", () => {
+    expect(
+      () =>
+        new Attribute({
+          ...baseSchema,
+          type: "complex",
+          subAttributes: [
+            {
+              ...baseSchema,
+              type: "complex",
+              subAttributes: [baseSchema],
+            } as unknown as typeof baseSchema,
+          ],
+        }),
+    ).toThrow(StructError);
+  });
+
+  test("Complex attributes require subattributes", () => {
+    expect(() => new Attribute({ ...baseSchema, type: "complex" })).toThrow(
+      StructError,
+    );
+    expect(
+      () =>
+        new Attribute({
+          ...baseSchema,
+          type: "complex",
+          subAttributes: [],
+        } as unknown as Partial<AttributeSchema>),
+    ).toThrow(StructError);
+    expect(
+      () =>
+        new Attribute({
+          ...baseSchema,
+          type: "complex",
+          subAttributes: [baseSchema],
+        }),
+    ).not.toThrow();
   });
 });

@@ -14,7 +14,8 @@ test("Parses Build-in Schemas", () => {
   expect(create(EnterpriseUserJson, Schema)).toBeDefined();
   expect(create(GroupJson, Schema)).toBeDefined();
   expect(create(ResourceTypeJson, Schema)).toBeDefined();
-  expect(create(SchemaJson, Schema)).toBeDefined();
+  // The schema definition has nested complex types, which is disallowed by the definition.
+  expect(() => create(SchemaJson, Schema)).toThrow(StructError);
   expect(create(ServiceProviderConfigJson, Schema)).toBeDefined();
   expect(create(UserJson, Schema)).toBeDefined();
 

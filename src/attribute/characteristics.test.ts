@@ -4,12 +4,15 @@ import { expectTypeOf } from "expect-type";
 import {
   CanonicalValues,
   CaseExact,
+  ComplexType,
   Description,
   MultiValued,
   Mutability,
   Name,
+  ReferenceType,
   Required,
   Returned,
+  SimpleType,
   Type,
   Uniqueness,
 } from "./characteristics";
@@ -23,8 +26,8 @@ test("Name", () => {
   );
   // Name is automatically lower cased.
   expect(create("SOME_name", Name)).toStrictEqual("some_name");
-  // "$ref" as a name is allowed by exception.
-  expect(create("$ref", Name)).toStrictEqual("$ref");
+  // "$ref" is not allowed as a general name.
+  expect(() => create("$ref", Name)).toThrow(StructError);
   // Non-alpha characters are disallowed as the first character.
   expect(() => create("$displayName", Name)).toThrow(StructError);
 
@@ -39,11 +42,48 @@ test("Type", () => {
   expect(create("integer", Type)).toStrictEqual("integer");
   expect(create("dateTime", Type)).toStrictEqual("dateTime");
   expect(create("binary", Type)).toStrictEqual("binary");
-  expect(create("reference", Type)).toStrictEqual("reference");
   expect(create("complex", Type)).toStrictEqual("complex");
+  expect(create("reference", Type)).toStrictEqual("reference");
   expect(() => create("class", Type)).toThrow(StructError);
 
-  expectTypeOf(create("string", Type)).toEqualTypeOf<Type>();
+  expect(create(undefined, SimpleType)).toStrictEqual("string");
+  expect(create("string", SimpleType)).toStrictEqual("string");
+  expect(create("boolean", SimpleType)).toStrictEqual("boolean");
+  expect(create("decimal", SimpleType)).toStrictEqual("decimal");
+  expect(create("integer", SimpleType)).toStrictEqual("integer");
+  expect(create("dateTime", SimpleType)).toStrictEqual("dateTime");
+  expect(create("binary", SimpleType)).toStrictEqual("binary");
+  expect(() => create("complex", SimpleType)).toThrow(StructError);
+  expect(() => create("reference", SimpleType)).toThrow(StructError);
+  expect(() => create("class", SimpleType)).toThrow(StructError);
+
+  expect(() => create(undefined, ComplexType)).toThrow(StructError);
+  expect(() => create("string", ComplexType)).toThrow(StructError);
+  expect(() => create("boolean", ComplexType)).toThrow(StructError);
+  expect(() => create("decimal", ComplexType)).toThrow(StructError);
+  expect(() => create("integer", ComplexType)).toThrow(StructError);
+  expect(() => create("dateTime", ComplexType)).toThrow(StructError);
+  expect(() => create("binary", ComplexType)).toThrow(StructError);
+  expect(create("complex", ComplexType)).toStrictEqual("complex");
+  expect(() => create("reference", ComplexType)).toThrow(StructError);
+  expect(() => create("class", ComplexType)).toThrow(StructError);
+
+  expect(() => create(undefined, ReferenceType)).toThrow(StructError);
+  expect(() => create("string", ReferenceType)).toThrow(StructError);
+  expect(() => create("boolean", ReferenceType)).toThrow(StructError);
+  expect(() => create("decimal", ReferenceType)).toThrow(StructError);
+  expect(() => create("integer", ReferenceType)).toThrow(StructError);
+  expect(() => create("dateTime", ReferenceType)).toThrow(StructError);
+  expect(() => create("binary", ReferenceType)).toThrow(StructError);
+  expect(() => create("complex", ReferenceType)).toThrow(StructError);
+  expect(create("reference", ReferenceType)).toStrictEqual("reference");
+  expect(() => create("class", ReferenceType)).toThrow(StructError);
+
+  expectTypeOf(create("string", SimpleType)).toEqualTypeOf<SimpleType>();
+  expectTypeOf(create("complex", ComplexType)).toEqualTypeOf<ComplexType>();
+  expectTypeOf(
+    create("reference", ReferenceType),
+  ).toEqualTypeOf<ReferenceType>();
 });
 
 test("Multi-valued", () => {

@@ -1,17 +1,19 @@
 import {
-  any,
   array,
   boolean,
   Describe,
   enums,
   integer,
+  nonempty,
   number,
+  object,
   optional,
   string,
   Struct,
+  union,
 } from "superstruct";
 
-import { base64, dateString, lowercase } from "../validation";
+import { base64, dateString, lowercase, schemaUrn, url } from "../validation";
 
 import { AttributeSchema } from "./schema";
 import { AttributeType } from "./types";
@@ -29,7 +31,7 @@ export type AttributeValidator<AS extends AttributeSchema> = Describe<
  * @param schema The schema to base the validator on.
  * @returns The validator for this schema.
  */
-export const attributeValidator = <AS extends AttributeSchema>(
+export const createAttributeValidator = <AS extends AttributeSchema>(
   schema: AS,
 ): AttributeValidator<AS> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,23 +67,40 @@ export const attributeValidator = <AS extends AttributeSchema>(
       validator = base64();
       break;
     case "reference":
-      validator = any(); // TODO
+      validator = union(
+        schema.referenceTypes.map((t) => {
+          if (t === "external") {
+            return url();
+          }
+
+          if (t === "uri") {
+            return schemaUrn();
+          }
+
+          return string();
+        }) as [Describe<string>, ...Describe<string>[]],
+      );
       break;
     case "complex":
-      validator = any(); // TODO
+      validator = object(
+        schema.subAttributes.reduce((prev, a) => {
+          return { ...prev, [a.name]: createAttributeValidator(a) };
+        }, {}),
+      );
       break;
   }
 
   if (schema.multiValued) {
     validator = array(validator);
-  }
 
-  if (!schema.required) {
-    validator = optional(validator);
+    if (schema.required) {
+      validator = nonempty(validator);
+    }
+  } else {
+    if (!schema.required) {
+      validator = optional(validator);
+    }
   }
-
-  // TODO schema.referenceTypes
-  // TODO schema.subAttributes
 
   return validator as AttributeValidator<AS>;
 };

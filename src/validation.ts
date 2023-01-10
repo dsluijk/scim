@@ -33,7 +33,7 @@ export const url = (opt?: IsURLOptions) =>
  * @returns A superstruct struct to validate the paths.
  */
 export const path = () =>
-  pattern(string(), /^(\/|(\/([\w\-~:@!$&'()*+,;=]|(\.(?!\.)))+)+)$/);
+  pattern(string(), /^(\/|((\/([\w\-~:@!$&'()*+,;=]|(\.(?!\.)))*)+))$/);
 
 /**
  * Parses a string as a date.
