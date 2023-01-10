@@ -1,7 +1,7 @@
 import { create, Describe, StructError } from "superstruct";
 import { expectTypeOf } from "expect-type";
 
-import { AttributeValidator, attributeValidator } from "./validator";
+import { AttributeValidator, createAttributeValidator } from "./validator";
 import { AttributeSchema } from "./schema";
 
 const schema: AttributeSchema = {
@@ -19,55 +19,58 @@ const schema: AttributeSchema = {
 
 test("Types Validator", () => {
   expect(
-    create("str", attributeValidator({ ...schema, type: "string" })),
+    create("str", createAttributeValidator({ ...schema, type: "string" })),
   ).toStrictEqual("str");
   expect(() =>
-    create(42, attributeValidator({ ...schema, type: "string" })),
+    create(42, createAttributeValidator({ ...schema, type: "string" })),
   ).toThrow(StructError);
 
   expect(
-    create(true, attributeValidator({ ...schema, type: "boolean" })),
+    create(true, createAttributeValidator({ ...schema, type: "boolean" })),
   ).toStrictEqual(true);
   expect(() =>
-    create("true", attributeValidator({ ...schema, type: "boolean" })),
+    create("true", createAttributeValidator({ ...schema, type: "boolean" })),
   ).toThrow(StructError);
 
   expect(
-    create(1.5, attributeValidator({ ...schema, type: "decimal" })),
+    create(1.5, createAttributeValidator({ ...schema, type: "decimal" })),
   ).toStrictEqual(1.5);
   expect(
-    create(42, attributeValidator({ ...schema, type: "decimal" })),
+    create(42, createAttributeValidator({ ...schema, type: "decimal" })),
   ).toStrictEqual(42);
   expect(() =>
-    create("42", attributeValidator({ ...schema, type: "decimal" })),
+    create("42", createAttributeValidator({ ...schema, type: "decimal" })),
   ).toThrow(StructError);
 
   expect(
-    create(42, attributeValidator({ ...schema, type: "integer" })),
+    create(42, createAttributeValidator({ ...schema, type: "integer" })),
   ).toStrictEqual(42);
   expect(() =>
-    create(1.5, attributeValidator({ ...schema, type: "integer" })),
+    create(1.5, createAttributeValidator({ ...schema, type: "integer" })),
   ).toThrow(StructError);
   expect(() =>
-    create("42", attributeValidator({ ...schema, type: "integer" })),
+    create("42", createAttributeValidator({ ...schema, type: "integer" })),
   ).toThrow(StructError);
 
   const date =
     "Thu Jan 01 2000 12:00:00 GMT+0100 (Central European Standard Time)";
   expect(
-    create(date, attributeValidator({ ...schema, type: "dateTime" })),
+    create(date, createAttributeValidator({ ...schema, type: "dateTime" })),
   ).toStrictEqual(new Date(date));
   expect(
-    create(new Date(date), attributeValidator({ ...schema, type: "dateTime" })),
+    create(
+      new Date(date),
+      createAttributeValidator({ ...schema, type: "dateTime" }),
+    ),
   ).toStrictEqual(new Date(date));
   expect(() =>
-    create("now", attributeValidator({ ...schema, type: "dateTime" })),
+    create("now", createAttributeValidator({ ...schema, type: "dateTime" })),
   ).toThrow(StructError);
 
   expect(
     create(
       "SGVsbG8gV29ybGQh",
-      attributeValidator({ ...schema, type: "binary" }),
+      createAttributeValidator({ ...schema, type: "binary" }),
     ),
   ).toStrictEqual(
     new Uint8Array([72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33]),
@@ -75,27 +78,141 @@ test("Types Validator", () => {
   expect(
     create(
       new Uint8Array([72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33]),
-      attributeValidator({ ...schema, type: "binary" }),
+      createAttributeValidator({ ...schema, type: "binary" }),
     ),
   ).toStrictEqual(
     new Uint8Array([72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33]),
   );
   expect(() =>
-    create(12, attributeValidator({ ...schema, type: "binary" })),
+    create(12, createAttributeValidator({ ...schema, type: "binary" })),
   ).toThrow(StructError);
 
   expect(
-    create("TODO", attributeValidator({ ...schema, type: "reference" })),
-  ).toStrictEqual("TODO");
+    create(
+      "urn:ietf:params:scim:schemas:core:2.0:Group",
+      createAttributeValidator({
+        ...schema,
+        type: "reference",
+        referenceTypes: ["uri"],
+      }),
+    ),
+  ).toStrictEqual("urn:ietf:params:scim:schemas:core:2.0:Group");
+  expect(() =>
+    create(
+      "notvalid",
+      createAttributeValidator({
+        ...schema,
+        type: "reference",
+        referenceTypes: ["uri"],
+      }),
+    ),
+  ).toThrow(StructError);
+  expect(
+    create(
+      "https://example.com/test.png",
+      createAttributeValidator({
+        ...schema,
+        type: "reference",
+        referenceTypes: ["external"],
+      }),
+    ),
+  ).toStrictEqual("https://example.com/test.png");
+  expect(() =>
+    create(
+      "urn:ietf:params:scim:schemas:core:2.0:Group",
+      createAttributeValidator({
+        ...schema,
+        type: "reference",
+        referenceTypes: ["external"],
+      }),
+    ),
+  ).toThrow(StructError);
+  expect(
+    create(
+      "urn:ietf:params:scim:schemas:core:2.0:Group",
+      createAttributeValidator({
+        ...schema,
+        type: "reference",
+        referenceTypes: ["uri", "external"],
+      }),
+    ),
+  ).toStrictEqual("urn:ietf:params:scim:schemas:core:2.0:Group");
+  expect(
+    create(
+      "https://example.com/test.png",
+      createAttributeValidator({
+        ...schema,
+        type: "reference",
+        referenceTypes: ["uri", "external"],
+      }),
+    ),
+  ).toStrictEqual("https://example.com/test.png");
+  expect(
+    create(
+      "acceptsanystring",
+      createAttributeValidator({
+        ...schema,
+        type: "reference",
+        referenceTypes: ["other"],
+      }),
+    ),
+  ).toStrictEqual("acceptsanystring");
 
   expect(
-    create("TODO", attributeValidator({ ...schema, type: "complex" })),
-  ).toStrictEqual("TODO");
+    create(
+      { name: "Mario" },
+      createAttributeValidator({
+        ...schema,
+        type: "complex",
+        subAttributes: [schema],
+      }),
+    ),
+  ).toStrictEqual({ name: "Mario" });
+  expect(
+    create(
+      { second: "Mario" },
+      createAttributeValidator({
+        ...schema,
+        type: "complex",
+        subAttributes: [{ ...schema, name: "second" }],
+      }),
+    ),
+  ).toStrictEqual({ second: "Mario" });
+  expect(() =>
+    create(
+      12,
+      createAttributeValidator({
+        ...schema,
+        type: "complex",
+        subAttributes: [schema],
+      }),
+    ),
+  ).toThrow(StructError);
+  expect(() =>
+    create(
+      { name: "Mario", second: 42 },
+      createAttributeValidator({
+        ...schema,
+        type: "complex",
+        subAttributes: [schema],
+      }),
+    ),
+  ).toThrow(StructError);
+  expect(() =>
+    create(
+      {},
+      createAttributeValidator({
+        ...schema,
+        type: "complex",
+        subAttributes: [schema],
+      }),
+    ),
+  ).toThrow(StructError);
 });
 
 describe("String Schema Validator", () => {
   test("Simple", () => {
-    const validator = attributeValidator(schema);
+    const validator = createAttributeValidator(schema);
 
     expect(create("Mario", validator)).toStrictEqual("Mario");
     expect(() => create(["Mario", "Luigi"], validator)).toThrow(StructError);
@@ -103,7 +220,7 @@ describe("String Schema Validator", () => {
   });
 
   test("Case Non-exact", () => {
-    const validator = attributeValidator({ ...schema, caseExact: false });
+    const validator = createAttributeValidator({ ...schema, caseExact: false });
 
     expect(create("Mario", validator)).toStrictEqual("mario");
     expect(() => create(["Mario", "Luigi"], validator)).toThrow(StructError);
@@ -111,19 +228,22 @@ describe("String Schema Validator", () => {
   });
 
   test("Required", () => {
-    const validator = attributeValidator({ ...schema });
+    const validator = createAttributeValidator({ ...schema });
 
     expect(create("Mario", validator)).toStrictEqual("Mario");
     expect(() => create(undefined, validator)).toThrow(StructError);
 
-    const validator2 = attributeValidator({ ...schema, required: false });
+    const validator2 = createAttributeValidator({ ...schema, required: false });
 
     expect(create("Mario", validator2)).toStrictEqual("Mario");
     expect(create(undefined, validator2)).toStrictEqual(undefined);
   });
 
   test("Multi-valued", () => {
-    const validator = attributeValidator({ ...schema, multiValued: true });
+    const validator = createAttributeValidator({
+      ...schema,
+      multiValued: true,
+    });
 
     expect(create(["Mario", "Luigi"], validator)).toStrictEqual([
       "Mario",
@@ -134,7 +254,7 @@ describe("String Schema Validator", () => {
   });
 
   test("Canonical", () => {
-    const validator = attributeValidator({
+    const validator = createAttributeValidator({
       ...schema,
       canonicalValues: ["Mario", "Luigi"],
     });
@@ -147,7 +267,7 @@ describe("String Schema Validator", () => {
   });
 
   test("Multi-valued Canonical", () => {
-    const validator = attributeValidator({
+    const validator = createAttributeValidator({
       ...schema,
       multiValued: true,
       canonicalValues: ["Mario", "Luigi"],
@@ -167,7 +287,7 @@ describe("String Schema Validator", () => {
 
 describe("Number Schema Validator", () => {
   test("Simple Decimal", () => {
-    const validator = attributeValidator({ ...schema, type: "decimal" });
+    const validator = createAttributeValidator({ ...schema, type: "decimal" });
 
     expect(create(42, validator)).toStrictEqual(42);
     expect(create(42.5, validator)).toStrictEqual(42.5);
@@ -177,7 +297,7 @@ describe("Number Schema Validator", () => {
   });
 
   test("Simple Integer", () => {
-    const validator = attributeValidator({ ...schema, type: "integer" });
+    const validator = createAttributeValidator({ ...schema, type: "integer" });
 
     expect(create(42, validator)).toStrictEqual(42);
     expect(() => create(7 / 3, validator)).toThrow(StructError);
@@ -187,7 +307,7 @@ describe("Number Schema Validator", () => {
   });
 
   test("Multi-valued", () => {
-    const validator = attributeValidator({
+    const validator = createAttributeValidator({
       ...schema,
       type: "decimal",
       multiValued: true,
@@ -199,12 +319,12 @@ describe("Number Schema Validator", () => {
   });
 
   test("Required", () => {
-    const validator = attributeValidator({ ...schema, type: "decimal" });
+    const validator = createAttributeValidator({ ...schema, type: "decimal" });
 
     expect(create(42, validator)).toStrictEqual(42);
     expect(() => create(undefined, validator)).toThrow(StructError);
 
-    const validator2 = attributeValidator({
+    const validator2 = createAttributeValidator({
       ...schema,
       type: "decimal",
       required: false,
@@ -217,7 +337,7 @@ describe("Number Schema Validator", () => {
 
 describe("Binary Schema Validator", () => {
   test("Simple Binary", () => {
-    const validator = attributeValidator({ ...schema, type: "binary" });
+    const validator = createAttributeValidator({ ...schema, type: "binary" });
 
     expect(create("", validator)).toStrictEqual(new Uint8Array(0));
     expect(create("SGVsbG8gV29ybGQh", validator)).toStrictEqual(
@@ -228,10 +348,11 @@ describe("Binary Schema Validator", () => {
   });
 
   test("Multi-valued", () => {
-    const validator = attributeValidator({
+    const validator = createAttributeValidator({
       ...schema,
       type: "binary",
       multiValued: true,
+      required: false,
     });
 
     expect(create([], validator)).toStrictEqual([]);
@@ -244,12 +365,12 @@ describe("Binary Schema Validator", () => {
   });
 
   test("Required", () => {
-    const validator = attributeValidator({ ...schema, type: "binary" });
+    const validator = createAttributeValidator({ ...schema, type: "binary" });
 
     expect(create("", validator)).toStrictEqual(new Uint8Array(0));
     expect(() => create(undefined, validator)).toThrow(StructError);
 
-    const validator2 = attributeValidator({
+    const validator2 = createAttributeValidator({
       ...schema,
       type: "binary",
       required: false,
@@ -266,16 +387,16 @@ test("Attribute Validator", () => {
   type CreatedAt = AttributeSchema<"createdAt", "dateTime", false, true, []>;
   type Blobs = AttributeSchema<"blobs", "binary", true, false, []>;
 
-  expectTypeOf(attributeValidator<IsAdmin>).returns.toEqualTypeOf<
+  expectTypeOf(createAttributeValidator<IsAdmin>).returns.toEqualTypeOf<
     AttributeValidator<IsAdmin>
   >();
-  expectTypeOf(attributeValidator<Tags>).returns.toEqualTypeOf<
+  expectTypeOf(createAttributeValidator<Tags>).returns.toEqualTypeOf<
     AttributeValidator<Tags>
   >();
-  expectTypeOf(attributeValidator<CreatedAt>).returns.toEqualTypeOf<
+  expectTypeOf(createAttributeValidator<CreatedAt>).returns.toEqualTypeOf<
     AttributeValidator<CreatedAt>
   >();
-  expectTypeOf(attributeValidator<Blobs>).returns.toEqualTypeOf<
+  expectTypeOf(createAttributeValidator<Blobs>).returns.toEqualTypeOf<
     AttributeValidator<Blobs>
   >();
 });
@@ -286,16 +407,16 @@ test("Attribute Validator Type", () => {
   type CreatedAt = AttributeSchema<"createdAt", "dateTime", false, true, []>;
   type Blobs = AttributeSchema<"blobs", "binary", true, false, []>;
 
-  expectTypeOf(attributeValidator<IsAdmin>).returns.toEqualTypeOf<
+  expectTypeOf(createAttributeValidator<IsAdmin>).returns.toEqualTypeOf<
     AttributeValidator<IsAdmin>
   >();
-  expectTypeOf(attributeValidator<Tags>).returns.toEqualTypeOf<
+  expectTypeOf(createAttributeValidator<Tags>).returns.toEqualTypeOf<
     AttributeValidator<Tags>
   >();
-  expectTypeOf(attributeValidator<CreatedAt>).returns.toEqualTypeOf<
+  expectTypeOf(createAttributeValidator<CreatedAt>).returns.toEqualTypeOf<
     AttributeValidator<CreatedAt>
   >();
-  expectTypeOf(attributeValidator<Blobs>).returns.toEqualTypeOf<
+  expectTypeOf(createAttributeValidator<Blobs>).returns.toEqualTypeOf<
     AttributeValidator<Blobs>
   >();
 
