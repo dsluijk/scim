@@ -48,7 +48,7 @@ export const Name: Describe<Name> = nonempty(
  *
  * Defaults to `string`.
  */
-export type SimpleType = typeof SimpleTypeOptions[number];
+export type SimpleType = (typeof SimpleTypeOptions)[number];
 export const SimpleType: Describe<SimpleType> = defaulted(
   enums(SimpleTypeOptions),
   "string",
@@ -137,7 +137,7 @@ export const CaseExact: Describe<CaseExact> = defaulted(boolean(), false);
  *
  * Defaults to `readWrite`.
  */
-export type Mutability = typeof MutabilityOptions[number];
+export type Mutability = (typeof MutabilityOptions)[number];
 export const Mutability: Describe<Mutability> = defaulted(
   enums(MutabilityOptions),
   "readWrite",
@@ -148,7 +148,7 @@ export const Mutability: Describe<Mutability> = defaulted(
  *
  * Defaults to `default`.
  */
-export type Returned = typeof ReturnedOptions[number];
+export type Returned = (typeof ReturnedOptions)[number];
 export const Returned: Describe<Returned> = defaulted(
   enums(ReturnedOptions),
   "default",
@@ -160,7 +160,7 @@ export const Returned: Describe<Returned> = defaulted(
  *
  * Defaults to `none`.
  */
-export type Uniqueness = typeof UniquenessOptions[number];
+export type Uniqueness = (typeof UniquenessOptions)[number];
 export const Uniqueness: Describe<Uniqueness> = defaulted(
   enums(UniquenessOptions),
   "none",
