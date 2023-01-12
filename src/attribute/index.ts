@@ -1,8 +1,8 @@
-import { create } from "superstruct";
+import { create, Describe } from "superstruct";
 
 import { AttributeType, AttributeTypes } from "./types";
-import { AttributeValidator, createAttributeValidator } from "./validator";
 import { AttributeSchema } from "./schema";
+import { createAttributeValidator } from "./validator";
 
 /**
  * Attribute used in a SCIM schema.
@@ -12,7 +12,7 @@ import { AttributeSchema } from "./schema";
  */
 export class Attribute<AS extends AttributeSchema> {
   private schema: AS;
-  private validator: AttributeValidator<AS>;
+  private validator: Describe<AttributeType<AS>>;
 
   /**
    * Create the attribute based on it's schema.
@@ -22,9 +22,12 @@ export class Attribute<AS extends AttributeSchema> {
    * @param partialSchema The schema to create the attribute with.
    * @throws {SchemaMeta} when the schema provided is not valid for SCIM.
    */
-  public constructor(partialSchema: Partial<AS>) {
+  public constructor(
+    partialSchema: Partial<AS>,
+    additionalValidator?: Describe<AttributeType<AS>>,
+  ) {
     this.schema = create(partialSchema, AttributeSchema) as AS;
-    this.validator = createAttributeValidator(this.schema);
+    this.validator = createAttributeValidator(this.schema, additionalValidator);
   }
 
   /**
