@@ -1,21 +1,23 @@
-import { create, Describe, StructError } from "superstruct";
+import { create, Describe, literal, string, StructError } from "superstruct";
 import { expectTypeOf } from "expect-type";
 
-import { AttributeValidator, createAttributeValidator } from "./validator";
 import { AttributeSchema } from "./schema";
+import { createAttributeValidator } from "./validator";
 
-const schema: AttributeSchema = {
+import { AttributeType } from ".";
+
+const schema = {
   name: "name",
   description: "",
   type: "string",
   multiValued: false,
   required: true,
   caseExact: true,
-  canonicalValues: [],
+  canonicalValues: [] as [],
   mutability: "readWrite",
   returned: "default",
   uniqueness: "none",
-};
+} as const;
 
 test("Types Validator", () => {
   expect(
@@ -335,6 +337,38 @@ describe("Number Schema Validator", () => {
   });
 });
 
+describe("Extra Validator", () => {
+  test("No-op extra passes", () => {
+    expect(
+      create("Hello World", createAttributeValidator(schema)),
+    ).toStrictEqual("Hello World");
+    expect(
+      create("Hello World", createAttributeValidator(schema, string())),
+    ).toStrictEqual("Hello World");
+    expect(
+      create(
+        "Hello World",
+        createAttributeValidator(schema, literal("Hello World")),
+      ),
+    ).toStrictEqual("Hello World");
+  });
+
+  test("Extra validation is fail-able", () => {
+    expect(
+      create(
+        "Hello World",
+        createAttributeValidator(schema, literal("Hello World")),
+      ),
+    ).toStrictEqual("Hello World");
+    expect(() =>
+      create(
+        "Hello World",
+        createAttributeValidator(schema, literal("Hello Boo")),
+      ),
+    ).toThrow(StructError);
+  });
+});
+
 describe("Binary Schema Validator", () => {
   test("Simple Binary", () => {
     const validator = createAttributeValidator({ ...schema, type: "binary" });
@@ -388,16 +422,16 @@ test("Attribute Validator", () => {
   type Blobs = AttributeSchema<"blobs", "binary", true, false, []>;
 
   expectTypeOf(createAttributeValidator<IsAdmin>).returns.toEqualTypeOf<
-    AttributeValidator<IsAdmin>
+    Describe<AttributeType<IsAdmin>>
   >();
   expectTypeOf(createAttributeValidator<Tags>).returns.toEqualTypeOf<
-    AttributeValidator<Tags>
+    Describe<AttributeType<Tags>>
   >();
   expectTypeOf(createAttributeValidator<CreatedAt>).returns.toEqualTypeOf<
-    AttributeValidator<CreatedAt>
+    Describe<AttributeType<CreatedAt>>
   >();
   expectTypeOf(createAttributeValidator<Blobs>).returns.toEqualTypeOf<
-    AttributeValidator<Blobs>
+    Describe<AttributeType<Blobs>>
   >();
 });
 
@@ -408,26 +442,15 @@ test("Attribute Validator Type", () => {
   type Blobs = AttributeSchema<"blobs", "binary", true, false, []>;
 
   expectTypeOf(createAttributeValidator<IsAdmin>).returns.toEqualTypeOf<
-    AttributeValidator<IsAdmin>
+    Describe<AttributeType<IsAdmin>>
   >();
   expectTypeOf(createAttributeValidator<Tags>).returns.toEqualTypeOf<
-    AttributeValidator<Tags>
+    Describe<AttributeType<Tags>>
   >();
   expectTypeOf(createAttributeValidator<CreatedAt>).returns.toEqualTypeOf<
-    AttributeValidator<CreatedAt>
+    Describe<AttributeType<CreatedAt>>
   >();
   expectTypeOf(createAttributeValidator<Blobs>).returns.toEqualTypeOf<
-    AttributeValidator<Blobs>
-  >();
-
-  expectTypeOf<AttributeValidator<IsAdmin>>().toEqualTypeOf<
-    Describe<string | undefined>
-  >();
-  expectTypeOf<AttributeValidator<Tags>>().toEqualTypeOf<
-    Describe<("work" | "home")[]>
-  >();
-  expectTypeOf<AttributeValidator<CreatedAt>>().toEqualTypeOf<Describe<Date>>();
-  expectTypeOf<AttributeValidator<Blobs>>().toEqualTypeOf<
-    Describe<Uint8Array[] | undefined>
+    Describe<AttributeType<Blobs>>
   >();
 });

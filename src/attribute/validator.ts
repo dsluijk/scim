@@ -4,6 +4,7 @@ import {
   Describe,
   enums,
   integer,
+  intersection,
   nonempty,
   number,
   object,
@@ -19,21 +20,18 @@ import { AttributeSchema } from "./schema";
 import { AttributeType } from "./types";
 
 /**
- * Type for a Superstruct validator of an attribute schema.
- */
-export type AttributeValidator<AS extends AttributeSchema> = Describe<
-  AttributeType<AS>
->;
-
-/**
  * Dynamically create a Superstruct validator based on a attribute schema.
  * Can then be used to validate values for this schema.
  * @param schema The schema to base the validator on.
  * @returns The validator for this schema.
  */
-export const createAttributeValidator = <AS extends AttributeSchema>(
+export const createAttributeValidator = <
+  AS extends AttributeSchema,
+  V extends AttributeType<AS> = AttributeType<AS>,
+>(
   schema: AS,
-): AttributeValidator<AS> => {
+  additionalValidator?: Describe<V>,
+): Describe<V> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let validator: Struct<any, unknown>;
 
@@ -90,6 +88,10 @@ export const createAttributeValidator = <AS extends AttributeSchema>(
       break;
   }
 
+  if (additionalValidator) {
+    validator = intersection([validator, additionalValidator]);
+  }
+
   if (schema.multiValued) {
     validator = array(validator);
 
@@ -102,5 +104,5 @@ export const createAttributeValidator = <AS extends AttributeSchema>(
     }
   }
 
-  return validator as AttributeValidator<AS>;
+  return validator as Describe<V>;
 };
